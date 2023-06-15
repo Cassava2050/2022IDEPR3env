@@ -579,52 +579,6 @@ for (i in 1:length(trials)) {
 }
 
 ```
-
-# single THRIPS
-
-```{r}
-library(SpATS)
-
-my_dat57 <- my_dat %>% filter(trial_name == "202268IDEPR_cere") %>% 
-  mutate(R = as.factor(row_number),
-         C = as.factor(col_number))
-         
-
-ncols = length(unique(my_dat57$C))
-nrows = length(unique(my_dat57$R))
-
-
-mo_spatial <- SpATS(
-    response = "thrips1_5",
-    genotype = "accession_name",
-    genotype.as.random = TRUE,     #TRUE ---select one 
-    fixed = NULL,
-    spatial = ~ PSANOVA(col_number,
-      row_number,
-      nseg = c(ncols, nrows),
-      degree = c(3, 3),
-      nest.div = 2
-    ),
-    random = ~ R + C,
-    data = my_dat57,
-    control = list(tolerance = 1e-03, monitoring = 1)
-  )
-
-plot(mo_spatial)
-var.m0 <- variogram(mo_spatial)
-plot(var.m0)
-getHeritability(mo_spatial)
-```
-
-```{r}
-my_dat57 %>% filter(rep_number == 1, row_number %in% c(11), 
-                    col_number < 28, thrips1_5 >= 3) %>% 
-  select(plot_number, row_number, col_number, plot_name, thrips1_5) %>% arrange(plot_number) %>% 
-  write.table("clipboard", sep = "\t", col.names = T, row.names = F)
-```
-
-
-
 ## Single heritability
 
 ```{r}
@@ -632,20 +586,6 @@ single_h2 <- obj$resum_fitted_model[ ,1:3] %>%
   group_by(trial) %>%
   spread(trait, value = heritability) 
 
-heri <- obj$resum_fitted_model[ ,1:3] %>% 
-  ggplot(aes(x = trait, y = heritability, fill = trial)) +
-  geom_col(col = "black", 
-           position = 
-             position_dodge2(width = 0.7, preserve = "single", padding = 0.05)) +
-  scale_fill_jco() +
-  #geom_text(aes(label = heritability), vjust = -0.2, size = 2) +
-  #facet_wrap(~ trial, ncol = 2) +
-  theme_xiaofei() +
-  theme(axis.text.x = element_text(vjust = 1, angle = 65))
-heri  
- # ggsave(paste0("images\\heri_single", trial_interest, Sys.Date(), ".png"),
- #       plot = heri, units = "in", dpi = 300, width = 12, height = 6)
-  
 master_data[["single_h2"]] <- single_h2
 
 
