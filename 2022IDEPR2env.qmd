@@ -590,6 +590,8 @@ for (i in 1:length(trials)) {
  master_data[[paste0("BLUP_BLUE_", trials[i])]] <- blue_blup
 }
 
+plot(obj, type = "spatial") %>% class()
+
 ```
 ## Single heritability
 
