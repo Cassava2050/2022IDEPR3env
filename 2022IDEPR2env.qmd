@@ -650,21 +650,30 @@ master_data[[paste0("BLUPs_", "gxe")]] <- BLUPs_table
 
 ```{r}
 # Yield
-covcor_heat(matrix = met_results$VCOV$yield_ha$CORR, legend =c(0.35, 0.8))
+covcor_heat(matrix = met_results$VCOV$yield_ha$CORR, size = 8, legend =c(0.35, 0.8)) +
+  theme(
+  axis.text.y = element_text(size = 14),
+  axis.text.x = element_text(size = 14))
 
 ggsave(paste0("images\\yield_vcor", trial_interest, Sys.Date(), ".png"),
        units = "in", dpi = 300, width = 6, height = 6)
 
 # Dry matter
 
-covcor_heat(matrix = met_results$VCOV$DM_gravity$CORR, legend =c(0.35, 0.8))
+covcor_heat(matrix = met_results$VCOV$DM_gravity$CORR, size = 8, legend =c(0.35, 0.8)) +
+  theme(
+  axis.text.y = element_text(size = 14),
+  axis.text.x = element_text(size = 14))
 
 ggsave(paste0("images\\DM_vcor", trial_interest, Sys.Date(), ".png"),
        units = "in", dpi = 300, width = 6, height = 6)
 
 # plant type
 
-covcor_heat(matrix = met_results$VCOV$plant_type$CORR, legend =c(0.35, 0.8))
+covcor_heat(matrix = met_results$VCOV$plant_type$CORR, size = 8, legend =c(0.35, 0.8)) +
+  theme(
+  axis.text.y = element_text(size = 14),
+  axis.text.x = element_text(size = 14))
 
 ggsave(paste0("images\\plant_type_vcor", trial_interest, Sys.Date(), ".png"),
        units = "in", dpi = 300, width = 6, height = 6)
@@ -816,8 +825,6 @@ geno_cor <- gg_cor(
 
 M <- cor(BLUPs_table[, -1], use = "complete.obs")
 covcor_heat(matrix = M, corr = TRUE) + coord_flip()
-
-plot(, type = "correlation")
 
 
 ggsave(paste("images\\geno_corr", trial_interest, Sys.Date(), ".png", sep = "_"),
