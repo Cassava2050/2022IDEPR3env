@@ -509,6 +509,18 @@ ggsave(paste("images\\pheno_corr", trial_interest, Sys.Date(), ".png", sep = "_"
 my_dat <- trial_rm_sd %>% 
   add_column(block = NA) %>% mutate(block = as.factor(block))
 
+# fix thrips datum
+
+my_dat %>% filter(germination_perc == 0) %>% 
+  select(all_of(trait_ideal)) %>% pivot_longer(cols = everything(), 
+                                               names_to = "traits", 
+                                               values_to = "data") %>% 
+  arrange(desc(data)) %>% distinct() # there is a thrips datum to be fixed
+
+my_dat <- 
+  my_dat %>% mutate(thrips1_5 = 
+                      ifelse(plot_name == "202268IDEPR_cere_rep1_AM1472A-63_454", NA, thrips1_5))
+
 my_dat$trial_name %>% unique()
 
 results <- check_design_met(
@@ -638,79 +650,41 @@ master_data[[paste0("BLUPs_", "gxe")]] <- BLUPs_table
 
 ```{r}
 # Yield
-yield_vcor <- covcor_heat(matrix = met_results$VCOV$yield_ha$CORR, legend =c(0.35, 0.8))
+covcor_heat(matrix = met_results$VCOV$yield_ha$CORR, legend =c(0.35, 0.8))
 
 ggsave(paste0("images\\yield_vcor", trial_interest, Sys.Date(), ".png"),
-       plot = yield_vcor, units = "in", dpi = 300, width = 6, height = 6)
+       units = "in", dpi = 300, width = 6, height = 6)
 
 # Dry matter
 
-DM_vcor <- covcor_heat(matrix = met_results$VCOV$DM_gravity$CORR, legend =c(0.35, 0.8))
+covcor_heat(matrix = met_results$VCOV$DM_gravity$CORR, legend =c(0.35, 0.8))
 
 ggsave(paste0("images\\DM_vcor", trial_interest, Sys.Date(), ".png"),
-       plot = DM_vcor, units = "in", dpi = 300, width = 6, height = 6)
+       units = "in", dpi = 300, width = 6, height = 6)
+
+# plant type
+
+covcor_heat(matrix = met_results$VCOV$plant_type$CORR, legend =c(0.35, 0.8))
+
+ggsave(paste0("images\\plant_type_vcor", trial_interest, Sys.Date(), ".png"),
+       units = "in", dpi = 300, width = 6, height = 6)
 ```
 
+## Save variance covariance correlation
 
-```{r dpi=300}
+```{r}
 
+var_cov <- data.frame(as.data.frame(do.call(rbind, met_results$VCOV))$CORR)
 
+var_cov_cor <- var_cov %>% rownames_to_column("trial") %>% 
+  pivot_longer(!trial, names_to = "traits", values_to = "cor") %>% 
+  distinct(traits, .keep_all = TRUE) %>% 
+  separate(traits, c("trait", "trial_name"), sep = "\\.") %>% 
+  unite(`trial:trial`, trial, trial_name, sep = ":")
 
-#Yield
-corrplot(met_results$VCOV$yield_ha$CORR, method="color",  
-         type="lower", order="hclust", 
-         addCoef.col = "black", # Add coefficient of correlation
-         tl.col="black",
-         tl.cex = 0.8,#Text label color and rotation
-         diag=T 
-         )
-
-#Dry matter
-corrplot(met_results$VCOV$DM_gravity$CORR, method="color",  
-         type="lower", order="hclust", 
-         addCoef.col = "black", # Add coefficient of correlation
-         tl.col="black",
-         tl.cex = 0.8,#Text label color and rotation
-         diag=T 
-         )
-# plant_type
-corrplot(met_results$VCOV$height_1st_branch$CORR, method="color",  
-         type="lower", order="hclust", 
-         addCoef.col = "black", # Add coefficient of correlation
-         tl.col="black",
-         tl.cex = 0.8,#Text label color and rotation
-         diag=T
-         )
-
-# germination_perc
-corrplot(met_results$VCOV$germination_perc$CORR, method="color",  
-         type="lower", order="hclust", 
-         addCoef.col = "black", # Add coefficient of correlation
-         tl.col="black",
-         tl.cex = 0.8,#Text label color and rotation
-         diag=T
-         )
-
-# height_1st_branch
-
-corrplot(met_results$VCOV$thrips1_5$CORR, method="color",  
-         type="lower", order="hclust", 
-         addCoef.col = "black", # Add coefficient of correlation
-         tl.col="black",
-         tl.cex = 0.8,#Text label color and rotation
-         diag=T
-         )
-
-# carotenoid1_8
-corrplot(met_results$VCOV$carotenoid1_8$CORR, method="color",  
-         type="lower", order="hclust", 
-         addCoef.col = "black", # Add coefficient of correlation
-         tl.col="black",
-         tl.cex = 0.8,#Text label color and rotation
-         diag=T
-         )
-
+master_data[[paste0("cov_cor")]] <- var_cov_cor
 ```
+
 
 ## Save the BLUEs or raw data across the trials
 
